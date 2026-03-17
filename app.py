@@ -35,6 +35,16 @@ st.markdown(
     em linhas de produção industriais.
     """
 )
+# Sessão para baixar a planilha
+
+with open("example/producao_exemplo.xlsx", "rb") as file:
+    st.download_button(
+        label="Baixar planilha padrão",
+        data=file,
+        file_name="planilha_padrao.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 
 uploaded_file = st.file_uploader(
     "Upload da planilha de produção",
