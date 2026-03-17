@@ -79,7 +79,15 @@ if uploaded_file:
         (df["demanda_simulada"] - df["demanda_original"])
         / df["demanda_original"]
     ) * 100
+    # Média da variação (ou pode usar outra métrica)
+    variacao_media = df["variacao_demanda"].mean()
 
+    if percentual > 0:
+        st.warning(f"📈 A demanda simulada aumentou em * {variacao_media:.1f}%")
+    elif percentual < 0:
+        st.warning(f"📉 A demanda simulada reduziu em * {abs(variacao_media):.1f}%")
+    else:
+        st.info("➡️ Demanda original sem alterações")
     # -----------------------------
     # ANÁLISE DE PRODUÇÃO
     # -----------------------------
@@ -144,45 +152,52 @@ if uploaded_file:
         )
 
     # -----------------------------
-    # TABELA DETALHADA
+    # TABELA 
     # -----------------------------
-
     st.subheader("Detalhamento dos Processos")
 
+    # Copia dos dados
     tabela = df_resultado.copy()
-    tabela["Capacidade"] = tabela["capacidade_processo"].round(0).astype(int)
-    tabela["Utilização (%)"] = tabela["utilizacao_percent"].apply(lambda x: f"{x:.1f}%")
 
-    tabela["status_gargalo"] = tabela["utilizacao_percent"].apply(
+    # Status
+    tabela["Status"] = tabela["utilizacao_percent"].apply(
         lambda x: "🟢 Saudável" if x < 80 else ("🟡 Atenção" if x <= 100 else "🔴 Gargalo")
     )
+    tabela["Demanda"] = tabela["quantidade"].round(0).astype(int)
+    tabela["Capacidade"] = tabela["capacidade_processo"].round(0).astype(int)
+    tabela["Utilização %"] = tabela["utilizacao_percent"].apply(lambda x: f"{x:.1f}%")
 
-    def cor_status(val):
+    colunas_exibir = [
+        "processo", "maquina", "tempo_ciclo_seg",
+        "Capacidade", "Demanda", "Utilização %", "Status"
+    ]
 
-        if "Gargalo" in val:
-            return "color: #e74c3c; font-weight: bold"
+    # Converte para HTML SEM classe padrão
+    tabela_html = tabela[colunas_exibir].to_html(index=False)
 
-        elif "Atenção" in val:
-            return "color: #f39c12; font-weight: bold"
+    # CSS isolado (sem usar .dataframe)
+    tabela_html_estilizada = f"""
+    <div style="width:100%; overflow-x:auto;">
+        <style>
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+            th {{
+                text-align: center !important;   /* 👈 cabeçalho esquerda */
+                padding: 8px;
+            }}
+            td {{
+                text-align: center;
+                padding: 8px;
+            }}
+        </style>
+        {tabela_html}
+    </div>
+    """
 
-        elif "Saudável" in val:
-            return "color: #2ecc71; font-weight: bold"
-
-        return ""
-
-    st.dataframe(
-        tabela[
-            [
-                "processo",
-                "maquina",
-                "tempo_ciclo_seg",
-                "Capacidade",
-                "Utilização (%)",
-                "status_gargalo"
-            ]
-        ].style.map(cor_status, subset=["status_gargalo"]),
-        width='stretch'
-    )
+    # Exibe no Streamlit
+    st.markdown(tabela_html_estilizada, unsafe_allow_html=True)
 
     # -----------------------------
     # GRÁFICO TAKT VS CICLO
