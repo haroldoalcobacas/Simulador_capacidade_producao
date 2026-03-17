@@ -348,3 +348,18 @@ if uploaded_file:
     **Máquinas adicionais necessárias:** {row['maquinas_adicionais']}
     """
             )
+    st.markdown(
+        """
+        <hr>
+        <div style='text-align: center; color: gray; font-size: 16px;'>
+            <p>Desenvolvido por <strong>Haroldo Alcobaças</strong></p>
+            <p>
+                <a href="https://www.linkedin.com/in/haroldoalcobacas/" target="_blank" 
+                style="text-decoration:none; font-weight:bold;">
+                🔗 Conecte-se comigo no LinkedIn
+                </a>
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
